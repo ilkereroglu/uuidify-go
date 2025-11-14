@@ -1,0 +1,157 @@
+openapi: 3.0.3
+info:
+  title: UUIDify API
+  version: 1.0.0
+  description: |
+    Blazing-fast public UUID/ULID generation API.
+    Built with Go & Cloudflare Workers — global, serverless, low-latency.
+
+servers:
+  - url: https://api.uuidify.io
+    description: Production API
+
+tags:
+  - name: Generate
+    description: "Generate a new UUID sync"
+
+paths:
+  "/":
+    get:
+      tags: [Generate]
+      summary: Generate UUIDs or ULIDs
+      description: |
+        Generates one or more identifiers using UUID (v1, v4, v7) or ULID algorithms.
+        Returned format changes depending on algorithm + count.
+      parameters:
+        - name: algorithm
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [uuid, ulid]
+            default: uuid
+          description: Generator algorithm selection
+
+        - name: version
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [v1, v4, v7, ulid]
+            default: v4
+          description: |
+            UUID version.  
+            When algorithm=ulid, version is ignored and ULIDs are produced.
+
+        - name: count
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 1
+          description: Number of identifiers to generate.
+
+        - name: format
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [json, text]
+            default: json
+          description: |
+            Response format.
+            - `json` → default structured JSON
+            - `text` → newline-delimited plaintext output
+
+      responses:
+        "200":
+          description: Successful generation
+          content:
+            application/json:
+              schema:
+                oneOf:
+
+                  # UUID — single
+                  - type: object
+                    properties:
+                      uuid:
+                        type: string
+                        description: Single UUID
+                      generated_at:
+                        type: string
+                        format: date-time
+                        description: RFC3339 timestamp indicating when the ID was generated
+                    example:
+                      uuid: "550e8400-e29b-41d4-a716-446655440000"
+                      generated_at: "2025-11-15T01:00:00Z"
+
+                  # UUID — multiple
+                  - type: object
+                    properties:
+                      uuids:
+                        type: array
+                        items:
+                          type: string
+                      generated_at:
+                        type: string
+                        format: date-time
+                    example:
+                      uuids:
+                        - "550e8400-e29b-41d4-a716-446655440000"
+                        - "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+                      generated_at: "2025-11-15T01:00:00Z"
+
+                  # ULID — single
+                  - type: object
+                    properties:
+                      ulid:
+                        type: string
+                      generated_at:
+                        type: string
+                        format: date-time
+                    example:
+                      ulid: "01HX7D9PMV4NQVP3J8B1R6R6FZ"
+                      generated_at: "2025-11-15T01:00:00Z"
+
+                  # ULID — multiple
+                  - type: object
+                    properties:
+                      ulids:
+                        type: array
+                        items:
+                          type: string
+                      generated_at:
+                        type: string
+                        format: date-time
+                    example:
+                      ulids:
+                        - "01HX7D9PMV4NQVP3J8B1R6R6FZ"
+                        - "01HX7D9PMV4NQVP3J8B1R6R6GA"
+                      generated_at: "2025-11-15T01:00:00Z"
+
+            text/plain:
+              schema:
+                type: string
+                description: Newline-delimited text format
+              example: |
+                550e8400-e29b-41d4-a716-446655440000
+                6ba7b810-9dad-11d1-80b4-00c04fd430c8
+
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: "Invalid version parameter"
+
+        "500":
+          description: Internal error
+
+components: {}

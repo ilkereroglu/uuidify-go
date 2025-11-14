@@ -30,17 +30,10 @@ jobs:
         run: |
           curl -L "https://raw.githubusercontent.com/ilkereroglu/uuidify/main/api/openapi.yaml" -o openapi/openapi.yaml
 
-      - name: Regenerate SDK (CLI mode)
-        run: |
-            # Generate types (models)
-            oapi-codegen -package uuidify -generate types -o models.go openapi/openapi.yaml
-        
-            # Generate client
-            oapi-codegen -package uuidify -generate client -o client.go openapi/openapi.yaml
-        
-            # Generate request/parameters (senin use-case’e göre)
-            oapi-codegen -package uuidify -generate types -o request.go openapi/openapi.yaml
-        
+          - name: Regenerate SDK
+          run: |
+            oapi-codegen -package uuidify -generate types   -o models.go     openapi/openapi.yaml
+            oapi-codegen -package uuidify -generate client  -o client.go     openapi/openapi.yaml
             go fmt ./...
 
       - name: Create branch
