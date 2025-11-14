@@ -30,8 +30,8 @@ jobs:
         run: |
           curl -L "https://raw.githubusercontent.com/ilkereroglu/uuidify/main/api/openapi.yaml" -o openapi/openapi.yaml
 
-          - name: Regenerate SDK
-          run: |
+      - name: Regenerate SDK
+        run: |
             oapi-codegen -package uuidify -generate types   -o models.go     openapi/openapi.yaml
             oapi-codegen -package uuidify -generate client  -o client.go     openapi/openapi.yaml
             go fmt ./...
