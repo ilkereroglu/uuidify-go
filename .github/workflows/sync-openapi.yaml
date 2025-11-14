@@ -27,7 +27,7 @@ jobs:
 
       - name: Download latest OpenAPI spec from uuidify repo
         run: |
-          curl -L "https://raw.githubusercontent.com/uuidify/uuidify/main/api/openapi.yaml" -o openapi/openapi.yaml
+          curl -L "https://raw.githubusercontent.com/ilkereroglu/uuidify/main/api/openapi.yaml" -o openapi/openapi.yaml
 
       - name: Regenerate SDK from config.yaml
         run: |
