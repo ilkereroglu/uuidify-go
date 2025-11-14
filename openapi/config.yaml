@@ -1,15 +1,18 @@
 package: uuidify
 
 generate:
-  types: true
   client: true
-  skip-fmt: false
-  embedded-spec: false
+  types: true
+  models: true
 
-output:
-  types: models.go
-  client: client.go
-  parameters: request.go
+output: .
+output-options:
+  skip-fmt: false
 
 templates:
-  dir: templates
+  - type: client
+    dir: templates
+  - type: types
+    dir: templates
+  - type: parameters
+    dir: templates
