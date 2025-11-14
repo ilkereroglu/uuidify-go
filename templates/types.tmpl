@@ -1,0 +1,16 @@
+{{- /* TYPES TEMPLATE */ -}}
+package {{ .Package }}
+
+{{- range .Imports }}
+import "{{ . }}"
+{{- end }}
+
+{{ range .Types }}
+// {{ .Name }} {{ .Description }}
+type {{ .Name }} struct {
+    {{- range .Fields }}
+    // {{ .Description }}
+    {{ .Name }} {{ .Type }} `json:"{{ .JsonName }},omitempty"`
+    {{- end }}
+}
+{{ end }}

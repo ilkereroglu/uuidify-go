@@ -1,0 +1,18 @@
+package {{ .Package }}
+
+type RequestOptions struct {
+	Query map[string]string
+}
+
+func NewRequestOptions() *RequestOptions {
+	return &RequestOptions{
+		Query: make(map[string]string),
+	}
+}
+
+{{ range .Params }}
+// {{ .Name }}Param {{ .Description }}
+type {{ .Name }}Param struct {
+	Value {{ .Type }}
+}
+{{ end }}

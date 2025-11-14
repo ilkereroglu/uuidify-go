@@ -1,0 +1,15 @@
+package: uuidify
+
+generate:
+  types: true
+  client: true
+  skip-fmt: false
+  embedded-spec: false
+
+output:
+  types: models.go
+  client: client.go
+  parameters: request.go
+
+templates:
+  dir: templates
