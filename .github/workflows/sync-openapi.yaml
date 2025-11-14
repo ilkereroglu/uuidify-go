@@ -21,9 +21,12 @@ jobs:
         with:
           go-version: "1.22"
 
-      - name: Install oapi-codegen
+      - name: Install oapi-codegen (v2)
         run: |
-          go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
+            curl -L https://github.com/oapi-codegen/oapi-codegen/releases/download/v2.2.0/oapi-codegen_Linux_x86_64.tar.gz -o oapi.tar.gz
+            tar -xzf oapi.tar.gz
+            sudo mv oapi-codegen /usr/local/bin/oapi-codegen
+            chmod +x /usr/local/bin/oapi-codegen
 
       - name: Download latest OpenAPI spec from uuidify repo
         run: |
