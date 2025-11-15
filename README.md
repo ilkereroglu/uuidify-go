@@ -1,23 +1,22 @@
-# uuidify-go
+# uuidify-go — Fast UUID & ULID generation for Go apps
+> Official Go SDK for the [UUIDify API](https://github.com/ilkereroglu/uuidify).
 
-![Release](https://img.shields.io/github/v/release/ilkereroglu/uuidify-go?style=for-the-badge)
-![Go SDK Tests](https://github.com/ilkereroglu/uuidify-go/actions/workflows/test.yaml/badge.svg)
-![OpenAPI Sync](https://github.com/ilkereroglu/uuidify-go/actions/workflows/sync-openapi.yaml/badge.svg)
+[![Go Reference](https://pkg.go.dev/badge/github.com/ilkereroglu/uuidify-go.svg)](https://pkg.go.dev/github.com/ilkereroglu/uuidify-go)
+[![Go Report Card](https://goreportcard.com/badge/github.com/ilkereroglu/uuidify-go)](https://goreportcard.com/report/github.com/ilkereroglu/uuidify-go)
+![Release](https://img.shields.io/github/v/release/ilkereroglu/uuidify-go?color=blue)
+![MIT License](https://img.shields.io/badge/License-MIT-green.svg)
+[![Go SDK Tests](https://github.com/ilkereroglu/uuidify-go/actions/workflows/test.yaml/badge.svg)](https://github.com/ilkereroglu/uuidify-go/actions/workflows/test.yaml)
 
-Official Go SDK for [uuidify.io](https://uuidify.io) offering fast UUID/ULID generation with a minimal, idiomatic API. The package ships as a single module (`github.com/ilkereroglu/uuidify-go`) and can be embedded in CLIs, services, and serverless functions without extra dependencies.
+Minimal, idiomatic Go client for generating UUIDv1/v4/v7 and ULID identifiers through UUIDify’s globally distributed API.
 
-## Features
-- Simple `uuidify.NewClient()` constructor with overridable base URL, HTTP client, and User-Agent
-- Support for UUID v1, v4, and v7 plus ULID generation (single or batched)
-- Context-aware requests with consistent error types for transport, API status, and JSON decoding issues
-- Example applications and CI pipelines to keep the SDK production-ready
+---
 
-## Installation
+## Install
 ```bash
 go get github.com/ilkereroglu/uuidify-go
 ```
 
-## Quick Start
+## Usage
 ```go
 package main
 
@@ -26,7 +25,7 @@ import (
     "fmt"
     "log"
 
-    "github.com/ilkereroglu/uuidify-go"
+    uuidify "github.com/ilkereroglu/uuidify-go"
 )
 
 func main() {
@@ -44,57 +43,36 @@ func main() {
 }
 ```
 
-## Usage
-### Customizing the Client
-```go
-client, err := uuidify.NewClient(
-    uuidify.DefaultBaseURL,
-    uuidify.WithUserAgent("my-app/1.0"),
-)
-if err != nil {
-    log.Fatal(err)
-}
-```
-The client exposes:
-- `UUIDv1(ctx)` / `UUIDv4(ctx)` / `UUIDv7(ctx)`
-- `ULID(ctx)`
-- `UUIDBatch(ctx, version, count)`
-- `ULIDBatch(ctx, count)`
-Each method respects the provided `context.Context` for cancellation and deadlines.
-
-### Error Handling
-Three dedicated error types make it easy to react appropriately:
-- `RequestError` – network failures or invalid requests
-- `APIError` – non-2xx responses, including HTTP status code and message
-- `DecodeError` – JSON decoding failures
-
-Use `errors.As` to branch on these errors:
-```go
-var apiErr *uuidify.APIError
-if errors.As(err, &apiErr) {
-    fmt.Println("UUIDify returned status", apiErr.StatusCode)
-}
-```
-
 ## Examples
-Run the samples in the [`examples/`](examples) directory:
-- [`examples/uuid_v4`](examples/uuid_v4)
-- [`examples/uuid_v7_batch`](examples/uuid_v7_batch)
-- [`examples/ulid`](examples/ulid)
-```bash
-go run ./examples/uuid_v7_batch
-```
+Concrete demos live under [`examples/`](examples):
 
-## OpenAPI & Code Generation
-The `openapi/` directory is auto-synced from the upstream uuidify repository via GitHub Actions. Custom templates under `templates/` are used with [`oapi-codegen`](https://github.com/deepmap/oapi-codegen) (see `openapi/config.yaml`) to regenerate the SDK (`client.go`, `models.go`, `request.go`).
+- `go run ./examples/uuid_v4` – fetch a single UUIDv4.
+- `go run ./examples/uuid_v7_batch` – batch-generate v7 identifiers.
+- `go run ./examples/ulid` – obtain a ULID.
+Each example uses `context.Context`, the default client, and the same error handling patterns you can reuse in your services.
 
-## Development
-```bash
-go vet ./...
-go test ./...
-go build ./...
-```
-A CI workflow (`.github/workflows/test.yaml`) runs lint, build, and tests on every PR and push. Use `go test -tags live ./...` to hit the production API when needed.
+## Features
+- ✅ Drop-in `NewDefaultClient()` with overridable base URL, HTTP client, and User-Agent.
+- ⚡️ Fetch UUIDv1/v4/v7, ULID, or batch payloads with one call.
+- 🧵 Context-aware HTTP requests, perfect for microservices, CLIs, and serverless workloads.
+- 🎯 Typed error system (`RequestError`, `APIError`, `DecodeError`) for clean retries and observability.
+- 🧩 Generated directly from UUIDify’s OpenAPI spec, ensuring long-term compatibility.
+- 🧪 Backed by Go tooling (`go test`, `go vet`, CI) and production-friendly release workflow.
+
+## Why UUIDify
+UUIDify is a latency-optimized unique identifier service built for modern Go developers. With this SDK you get:
+
+- A highly available UUID/ULID generator distributed across regions.
+- Predictable performance without maintaining your own randomness infrastructure.
+- Consistent REST semantics you can test locally and promote to production seamlessly.
+- OpenAPI-driven definitions to keep typed clients in sync across releases.
+
+## Service & Documentation
+- Main service repository: [github.com/ilkereroglu/uuidify](https://github.com/ilkereroglu/uuidify)
+- API documentation & schema: [`api/openapi.yaml`](https://github.com/ilkereroglu/uuidify/blob/main/api/openapi.yaml)
+
+## API Reference
+- Go package reference on pkg.go.dev: [pkg.go.dev/github.com/ilkereroglu/uuidify-go](https://pkg.go.dev/github.com/ilkereroglu/uuidify-go)
 
 ## License
-This project is licensed under the [MIT License](LICENSE).
+MIT License © [ilkereroglu](https://github.com/ilkereroglu)
