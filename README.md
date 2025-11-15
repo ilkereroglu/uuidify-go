@@ -30,7 +30,10 @@ import (
 )
 
 func main() {
-    client := uuidify.NewClient()
+    client, err := uuidify.NewDefaultClient()
+    if err != nil {
+        log.Fatal(err)
+    }
 
     id, err := client.UUIDv4(context.Background())
     if err != nil {
@@ -44,10 +47,13 @@ func main() {
 ## Usage
 ### Customizing the Client
 ```go
-client := uuidify.NewClient(
-    uuidify.WithBaseURL("https://api.uuidify.io"),
+client, err := uuidify.NewClient(
+    uuidify.DefaultBaseURL,
     uuidify.WithUserAgent("my-app/1.0"),
 )
+if err != nil {
+    log.Fatal(err)
+}
 ```
 The client exposes:
 - `UUIDv1(ctx)` / `UUIDv4(ctx)` / `UUIDv7(ctx)`

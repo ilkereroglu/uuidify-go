@@ -9,7 +9,10 @@ import (
 )
 
 func main() {
-	c := uuidify.NewClient()
+	c, err := uuidify.NewDefaultClient()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	ulid, err := c.ULID(context.Background())
 	if err != nil {

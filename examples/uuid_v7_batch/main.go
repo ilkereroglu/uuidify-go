@@ -9,7 +9,10 @@ import (
 )
 
 func main() {
-	c := uuidify.NewClient()
+	c, err := uuidify.NewDefaultClient()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	uuids, err := c.UUIDBatch(context.Background(), "v7", 5)
 	if err != nil {

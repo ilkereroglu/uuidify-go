@@ -21,7 +21,7 @@ func TestUUIDv4_Single(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	c := newTestClient(ts)
+c := newTestClient(t, ts)
 
 	uuid, err := c.UUIDv4(context.Background())
 	if err != nil {
@@ -48,7 +48,7 @@ func TestUUIDv7_Batch(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	c := newTestClient(ts)
+c := newTestClient(t, ts)
 
 	uuids, err := c.UUIDBatch(context.Background(), "v7", 5)
 	if err != nil {
@@ -71,7 +71,7 @@ func TestULID_Single(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	c := newTestClient(ts)
+c := newTestClient(t, ts)
 
 	id, err := c.ULID(context.Background())
 	if err != nil {
@@ -98,7 +98,7 @@ func TestULID_Batch(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	c := newTestClient(ts)
+c := newTestClient(t, ts)
 
 	ids, err := c.ULIDBatch(context.Background(), 3)
 	if err != nil {
@@ -116,10 +116,10 @@ func TestError_Transport(t *testing.T) {
 		return nil, errors.New("boom")
 	})}
 
-	c := NewClient(
-		WithBaseURL("https://example.com"),
-		WithHTTPClient(client),
-	)
+c, err := NewClient("https://example.com", WithHTTPClient(client))
+if err != nil {
+	t.Fatalf("failed to create client: %v", err)
+}
 
 	if _, err := c.UUIDv4(context.Background()); err == nil {
 		t.Fatal("expected error, got nil")
@@ -140,7 +140,7 @@ func TestError_Decode(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	c := newTestClient(ts)
+c := newTestClient(t, ts)
 
 	if _, err := c.UUIDv4(context.Background()); err == nil {
 		t.Fatal("expected error, got nil")
@@ -161,7 +161,7 @@ func TestError_APIStatus(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	c := newTestClient(ts)
+c := newTestClient(t, ts)
 
 	if _, err := c.UUIDv4(context.Background()); err == nil {
 		t.Fatal("expected error, got nil")
@@ -176,11 +176,17 @@ func TestError_APIStatus(t *testing.T) {
 	}
 }
 
-func newTestClient(ts *httptest.Server) *Client {
-	return NewClient(
-		WithBaseURL(ts.URL),
+func newTestClient(t *testing.T, ts *httptest.Server) *Client {
+	t.Helper()
+	client, err := NewClient(
+		ts.URL,
 		WithHTTPClient(ts.Client()),
+		WithUserAgent("uuidify-go-tests"),
 	)
+	if err != nil {
+		t.Fatalf("failed to create client: %v", err)
+	}
+	return client
 }
 
 type roundTripFunc func(*http.Request) (*http.Response, error)
