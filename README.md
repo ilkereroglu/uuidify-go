@@ -1,6 +1,6 @@
 # uuidify-go
 
-![Release](https://img.shields.io/github/v/release/uuidify/uuidify-go?style=for-the-badge)
+![Release](https://img.shields.io/github/v/release/ilkereroglu/uuidify-go?style=for-the-badge)
 ![Go SDK Tests](https://github.com/ilkereroglu/uuidify-go/actions/workflows/test.yaml/badge.svg)
 ![OpenAPI Sync](https://github.com/ilkereroglu/uuidify-go/actions/workflows/sync-openapi.yaml/badge.svg)
 
