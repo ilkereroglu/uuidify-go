@@ -15,57 +15,63 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: "1.22"
 
-      - name: Install oapi-codegen v2
+      - name: Install oapi-codegen
         run: |
-            go install github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@v2.2.0
-            echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+          go install github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@v2.2.0
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
 
-      - name: Download latest OpenAPI spec from uuidify repo
+      - name: Download OpenAPI spec from uuidify
         run: |
-          curl -L "https://raw.githubusercontent.com/ilkereroglu/uuidify/main/api/openapi.yaml" -o openapi/openapi.yaml
+          mkdir -p openapi
+          curl -sSfL https://raw.githubusercontent.com/ilkereroglu/uuidify/main/api/openapi.yaml -o openapi/openapi.yaml
 
       - name: Regenerate SDK
         run: |
-            oapi-codegen -package uuidify -generate types   -o models.go     openapi/openapi.yaml
-            oapi-codegen -package uuidify -generate client  -o client.go     openapi/openapi.yaml
-            go fmt ./...
+          oapi-codegen -package uuidify -generate types  -o types.gen.go  openapi/openapi.yaml
+          oapi-codegen -package uuidify -generate client -o client.gen.go openapi/openapi.yaml
+          gofmt -w types.gen.go client.gen.go
 
-      - name: Create branch
+      - name: Stage artifacts
+        id: diff
         run: |
-          BRANCH="sync-openapi-$(date +%s)"
-          echo "BRANCH=$BRANCH" >> $GITHUB_ENV
-          git checkout -b $BRANCH
           git config user.name "uuidify-bot"
           git config user.email "bot@uuidify.io"
-          git add .
-          git commit -m "feat(openapi): sync latest OpenAPI spec and regenerate Go SDK" || echo "No changes"
+          git add openapi/openapi.yaml types.gen.go client.gen.go
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
 
-      - name: Push branch
-        run: |
-          git push origin $BRANCH
-
-      - name: Create Pull Request
+      - name: Create pull request
+        if: steps.diff.outputs.changed == 'true'
         id: pr
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ env.BRANCH }}
+          branch: sync-openapi/${{ github.run_id }}
           base: main
           title: "feat(openapi): sync latest OpenAPI spec and regenerate Go SDK"
-          body: "Automated OpenAPI synchronization and Go SDK regeneration."
+          body: |
+            Automated OpenAPI synchronization triggered by repository_dispatch `openapi_updated`.
+            - Downloaded spec from uuidify/api/openapi.yaml
+            - Regenerated types.gen.go and client.gen.go using oapi-codegen CLI
+          commit-message: "feat(openapi): sync latest OpenAPI spec and regenerate Go SDK"
           labels: |
             automated
             openapi
+          delete-branch: true
 
       - name: Enable auto-merge
-        if: steps.pr.outputs.pull-request-number != ''
-        run: |
-          gh pr merge ${{ steps.pr.outputs.pull-request-number }} --auto --squash
+        if: steps.diff.outputs.changed == 'true' && steps.pr.outputs.pull-request-number != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr merge ${{ steps.pr.outputs.pull-request-number }} --auto --squash
